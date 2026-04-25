@@ -1,0 +1,17 @@
+{
+  "name": "エレメント20",
+  "short_name": "エレメント20",
+  "description": "元素記号と元素名を覚えるケミコレ風ゲーム",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#e0f7fa",
+  "theme_color": "#00acc1",
+  "orientation": "portrait",
+  "lang": "ja",
+  "icons": [
+    { "src": "./home-icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "./home-icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "./home-icon.png", "sizes": "180x180", "type": "image/png", "purpose": "any" }
+  ]
+}
