@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>エレメント20</title>
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="エレメント20" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="theme-color" content="#00acc1" />
+<link rel="manifest" href="./manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="./home-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="./home-icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="./home-icon-512.png" />
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@700;900&family=Dela+Gothic+One&display=swap');
+:root{
+  --bg:#e0f7fa;
+  --accent:#00acc1;
+  --accent-dark:#00838f;
+  --warn:#ff5252;
+  --yellow:#ffeb3b;
+  --text:#004d40;
+  --panel:rgba(255,255,255,.82);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:radial-gradient(circle at center,#f9ffff 0%,var(--bg) 62%,#bceff5 100%);font-family:'Zen Maru Gothic',system-ui,sans-serif;color:var(--text);}
+body.shake{animation:screenShake .28s ease;}
+@keyframes screenShake{0%,100%{transform:translate(0,0)}20%{transform:translate(-7px,2px)}40%{transform:translate(7px,-2px)}60%{transform:translate(-5px,-1px)}80%{transform:translate(5px,1px)}}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;padding:14px 10px calc(12px + env(safe-area-inset-bottom));}
+.screen.active{display:flex;}
+.title-pop{font-family:'Dela Gothic One','Zen Maru Gothic',sans-serif;color:var(--accent);letter-spacing:.05em;line-height:1.05;text-shadow:0 5px 0 #fff,0 12px 22px rgba(0,0,0,.14);animation:titleFloat 3s ease-in-out infinite;}
+@keyframes titleFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+#titleScreen{justify-content:center;gap:16px;}
+.logo{font-size:3.15rem;margin:0 0 6px;}
+.subtitle{font-size:.95rem;font-weight:900;color:#377883;margin-bottom:4px;}
+.title-card{width:min(92vw,390px);background:rgba(255,255,255,.84);border:4px solid var(--accent);border-radius:28px;padding:18px 16px;box-shadow:0 8px 0 rgba(0,131,143,.15),inset 0 0 0 4px rgba(255,255,255,.34);}
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;}
+.mode-card{display:flex;flex-direction:column;align-items:stretch;gap:7px;}
+.mode-best{font-size:.82rem;font-weight:900;color:#58777b;line-height:1.15;}
+.btn{border:none;border-radius:999px;padding:14px 12px;font-family:inherit;font-weight:900;color:white;background:var(--accent);box-shadow:0 5px 0 var(--accent-dark);font-size:1.05rem;cursor:pointer;}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 var(--accent-dark);}
+.btn.green{background:#4caf50;box-shadow:0 5px 0 #2e7d32;}
+.btn.pink{background:#ff6f91;box-shadow:0 5px 0 #d64d73;}
+#gameScreen{gap:4px;}
+.topbar{width:min(96vw,520px);display:grid;grid-template-columns:104px 1fr 78px;align-items:center;gap:8px;min-height:102px;}
+.scorebox{text-align:center;font-weight:900;line-height:1.15;color:#18535d;}
+.scorebox .score{font-size:2.05rem;color:var(--accent);text-shadow:0 2px 0 white;}
+.timer-wrap{position:relative;width:112px;height:112px;display:flex;align-items:center;justify-content:center;}
+.timer-ring{position:absolute;inset:0;border-radius:50%;background:conic-gradient(var(--timer-color,#00acc1) var(--p,100%),rgba(0,172,193,.15) 0);box-shadow:inset 0 0 0 4px rgba(255,255,255,.78),0 5px 0 rgba(0,0,0,.12);transition:background .12s linear;}
+.timer-ring::after{content:'';position:absolute;inset:12px;background:var(--timer-inner,#bff6fb);border-radius:50%;box-shadow:inset 0 3px 0 rgba(255,255,255,.48), inset 0 -7px 0 rgba(0,0,0,.12);transition:background .12s linear;}
+.timer-text{position:relative;z-index:1;font-size:2.18rem;font-weight:900;color:#003b35;text-shadow:0 3px 0 rgba(255,255,255,.9);}
+.time-pop{position:absolute;right:-30px;top:8px;font-weight:900;font-size:1.08rem;text-shadow:0 2px 0 white;opacity:0;transform:translateY(10px) scale(.8);pointer-events:none;z-index:3;}
+.time-pop.bonus{color:#ff9800;}
+.time-pop.penalty{color:#ff5252;}
+.time-pop.show{animation:timePop .85s ease forwards;}
+@keyframes timePop{0%{opacity:0;transform:translateY(10px) scale(.78)}20%{opacity:1;transform:translateY(-6px) scale(1.3)}72%{opacity:1;transform:translateY(-15px) scale(1)}100%{opacity:0;transform:translateY(-28px) scale(.9)}}
+.back-mini{width:72px;padding:8px 6px;font-size:.84rem;justify-self:end;}
+.question-panel{width:min(96vw,520px);height:146px;background:rgba(255,255,255,.72);border:3px solid var(--accent);border-radius:24px;box-shadow:inset 0 0 0 3px rgba(255,255,255,.3);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.question-viewport{position:relative;width:100%;height:100%;overflow:hidden;}
+.name-stack{position:absolute;left:0;right:0;top:28px;transition:transform .34s cubic-bezier(.22,.61,.36,1);}
+.name-card{display:flex;align-items:center;justify-content:center;font-weight:900;color:#263238;text-shadow:0 2px 0 rgba(255,255,255,.9);}
+.name-card.current{height:72px;font-size:2.45rem;color:#004d40;}
+.name-card.peek{height:35px;font-size:1.28rem;opacity:.42;filter:blur(.15px);}
+.name-card.peek2{height:30px;font-size:1.02rem;opacity:.25;filter:blur(.3px);}
+.question-panel.correct .name-card.current{animation:nameBurst .42s ease forwards;}
+@keyframes nameBurst{0%{transform:scale(1);opacity:1}45%{transform:scale(1.28);opacity:1;color:#ff9800;text-shadow:0 0 14px rgba(255,235,59,.8),0 2px 0 white}100%{transform:scale(.85);opacity:0}}
+.icon-question{display:flex;align-items:center;justify-content:center;width:100%;height:100%;transition:transform .26s ease, opacity .26s ease;}
+.icon-question.change{opacity:0;transform:translateY(-14px) scale(.96);}
+.icon-question.correct{animation:iconSuccess .48s ease forwards;}
+@keyframes iconSuccess{0%{transform:scale(1)}35%{transform:scale(1.18) rotate(-5deg);filter:brightness(1.25)}100%{transform:scale(.96);opacity:0}}
+.mode-label{font-size:.8rem;font-weight:900;color:#607d8b;margin-top:1px;}
+.table-wrap{width:min(96vw,520px);margin-top:6px;background:rgba(255,255,255,.68);border:3px solid var(--accent);border-radius:22px;padding:8px;box-shadow:inset 0 0 0 3px rgba(255,255,255,.28);}
+.periodic-grid{display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(4,54px);gap:4px;}
+.cell{position:relative;border:none;background:transparent;padding:0;min-width:0;cursor:pointer;}
+.cell:active{transform:scale(.94);}
+.answer-name{width:100%;height:100%;border:2px solid rgba(0,0,0,.18);border-radius:10px;background:#fff;color:#263238;font-size:.62rem;font-weight:900;display:flex;align-items:center;justify-content:center;line-height:1.05;padding:2px;box-shadow:0 3px 0 rgba(0,0,0,.12);word-break:keep-all;}
+.answer-name.long{font-size:.54rem;letter-spacing:-.04em;}
+.answer-name.two-line{font-size:.56rem;line-height:1.02;flex-direction:column;gap:0;letter-spacing:-.03em;}
+.answer-name.two-line span{display:block;}
+.answer-name.correct-flash{animation:choiceCorrect .38s ease;}
+@keyframes choiceCorrect{0%{transform:scale(1)}45%{transform:scale(1.12);background:#fff59d;color:#ef6c00}100%{transform:scale(1)}}
+.atom{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;font-size:1.22rem;font-weight:900;color:#fff;text-shadow:1px 1px 0 rgba(0,0,0,.5);border:3px solid rgba(0,0,0,.2);box-shadow:0 4px 0 rgba(0,0,0,.2);margin:auto;transition:transform .12s ease,filter .12s ease;}
+.atom .num{position:absolute;top:4px;left:7px;font-size:.48rem;opacity:.8;line-height:1;text-shadow:none;}
+.atom.big{width:112px;height:112px;font-size:2.5rem;border-width:4px;box-shadow:0 7px 0 rgba(0,0,0,.22);}
+.atom.big .num{font-size:.78rem;top:10px;left:16px;}
+.atom.fly{position:fixed;z-index:3000;pointer-events:none;transition:transform .34s cubic-bezier(.22,.61,.36,1), opacity .34s ease;}
+.atom.rejected{animation:rejectAtom .35s ease;}
+@keyframes rejectAtom{0%{transform:translateX(0) rotate(0)}25%{transform:translateX(-10px) rotate(-12deg)}50%{transform:translateX(12px) rotate(12deg)}75%{transform:translateX(-6px) rotate(-6deg)}100%{transform:translateX(0) rotate(0)}}
+/* ケミコレ本体カラー */
+.t-H{background:#67d4f2;color:#fff;text-shadow:1px 1px 0 rgba(0,0,0,.28)}
+.t-B{background:#8d6e63;color:#fff}
+.t-C{background:#37474f}.t-N{background:#b388ff}.t-O{background:#ff5252}.t-F{background:#b6d943;color:#fff;text-shadow:1px 1px 0 rgba(0,0,0,.18)}
+.t-Ne,.t-He,.t-Ar{background:linear-gradient(45deg,#b3e5fc,#0288d1);border-color:#fff}.t-Metal{background:#78909c}.t-Si{background:#d2691e;text-shadow:none}.t-P{background:#f06292}.t-S{background:#fbc02d;color:#4e342e;text-shadow:none}.t-Cl{background:#afb42b}
+.result-overlay{position:fixed;inset:0;pointer-events:none;z-index:2500;display:flex;align-items:center;justify-content:center;opacity:0;}
+.result-overlay.success{animation:successFlash .42s ease;}
+@keyframes successFlash{0%{opacity:0;background:rgba(0,224,224,0)}25%{opacity:1;background:rgba(0,224,224,.18)}100%{opacity:0;background:rgba(255,235,59,0)}}
+.particle{position:fixed;width:10px;height:10px;border-radius:50%;background:#ffeb3b;pointer-events:none;z-index:2600;animation:particle .56s ease-out forwards;}
+@keyframes particle{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--x),var(--y)) scale(.25)}}
+#gameOver{position:fixed;inset:0;background:rgba(0,0,0,.82);display:none;align-items:center;justify-content:center;z-index:5000;padding:16px;}
+.over-card{width:min(92vw,390px);background:white;border:4px solid var(--accent);border-radius:26px;padding:22px 18px;box-shadow:0 18px 38px rgba(0,0,0,.3);text-align:center;}
+.over-title{font-family:'Dela Gothic One','Zen Maru Gothic',sans-serif;color:var(--accent);font-size:2rem;text-shadow:0 3px 0 #e0f7fa;margin-bottom:8px;}
+.over-score{font-size:3rem;font-weight:900;color:#ff9800;text-shadow:0 2px 0 #fff;margin:4px 0 12px;}
+.combo-note{height:22px;font-size:.9rem;font-weight:900;color:#ff9800;text-shadow:0 1px 0 white;}
+@media(max-width:380px){
+  .periodic-grid{grid-template-rows:repeat(4,48px);gap:3px}.atom{width:44px;height:44px;font-size:1.04rem}.atom .num{font-size:.42rem;left:6px;top:4px}.answer-name{font-size:.56rem}.answer-name.long{font-size:.5rem}.answer-name.two-line{font-size:.51rem}.question-panel{height:132px}.name-card.current{font-size:2.12rem}.atom.big{width:100px;height:100px}.logo{font-size:2.55rem}.topbar{grid-template-columns:104px 1fr 72px}.timer-wrap{width:96px;height:96px}.timer-text{font-size:1.82rem}.time-pop{right:-26px;font-size:1rem}
+}
+
+body.answer-locked .periodic-grid{pointer-events:none;}
+/* ===== v7 Smooth Queue Motion ===== */
+.question-viewport{perspective:520px;}
+.symbol-stage{position:relative;width:100%;height:100%;}
+.symbol-name-card{position:absolute;left:0;right:0;display:flex;align-items:center;justify-content:center;font-weight:900;color:#263238;text-shadow:0 2px 0 rgba(255,255,255,.9);will-change:transform,opacity,top,font-size;transition:top .32s cubic-bezier(.22,.61,.36,1),font-size .32s cubic-bezier(.22,.61,.36,1),opacity .32s ease,transform .32s cubic-bezier(.22,.61,.36,1);}
+.symbol-name-card.current{top:40px;height:74px;font-size:2.52rem;color:#004d40;z-index:4;}
+.symbol-name-card.next{top:108px;height:38px;font-size:1.38rem;opacity:.48;transform:scale(.9);z-index:3;}
+.symbol-name-card.next2{top:137px;height:32px;font-size:1.08rem;opacity:.28;transform:scale(.78);z-index:2;}
+.symbol-name-card.next3{top:164px;height:28px;font-size:.92rem;opacity:0;transform:scale(.68);z-index:1;}
+.symbol-stage.advance .current{animation:symbolFlyBack .32s cubic-bezier(.2,.7,.25,1) forwards;}
+.symbol-stage.advance .next{top:40px;font-size:2.52rem;opacity:1;transform:scale(1);color:#004d40;z-index:4;}
+.symbol-stage.advance .next2{top:108px;font-size:1.38rem;opacity:.48;transform:scale(.9);z-index:3;}
+.symbol-stage.advance .next3{top:137px;font-size:1.08rem;opacity:.28;transform:scale(.78);z-index:2;}
+@keyframes symbolFlyBack{0%{transform:translateY(0) scale(1) rotateX(0);opacity:1;filter:blur(0)}42%{transform:translateY(-12px) scale(1.14) rotateX(0);opacity:1;color:#ff9800;text-shadow:0 0 14px rgba(255,235,59,.86),0 2px 0 #fff}100%{transform:translateY(-60px) scale(.42) rotateX(58deg);opacity:0;filter:blur(2px)}}
+.question-panel.correct .name-card.current{animation:none;}
+.icon-stage{position:relative;width:100%;height:100%;}
+.icon-card{position:absolute;top:50%;display:flex;align-items:center;justify-content:center;will-change:left,transform,opacity,filter;transition:left .34s cubic-bezier(.22,.61,.36,1),transform .34s cubic-bezier(.22,.61,.36,1),opacity .28s ease,filter .28s ease;}
+.icon-card .atom.big{margin:0;}
+.icon-current{left:50%;transform:translate(-50%,-50%) scale(1);opacity:1;z-index:4;}
+.icon-next{left:22%;transform:translate(-50%,-50%) scale(.55);opacity:.58;z-index:3;filter:saturate(.9) brightness(.96);}
+.icon-next2{left:8%;transform:translate(-50%,-50%) scale(.42);opacity:.28;z-index:2;filter:saturate(.8) brightness(.92);}
+.icon-next3{left:-6%;transform:translate(-50%,-50%) scale(.34);opacity:0;z-index:1;}
+.icon-stage.advance .icon-current{animation:iconVanishBurst .34s ease forwards;}
+.icon-stage.advance .icon-next{left:50%;transform:translate(-50%,-50%) scale(1);opacity:1;z-index:4;filter:none;}
+.icon-stage.advance .icon-next2{left:22%;transform:translate(-50%,-50%) scale(.55);opacity:.58;z-index:3;filter:saturate(.9) brightness(.96);}
+.icon-stage.advance .icon-next3{left:8%;transform:translate(-50%,-50%) scale(.42);opacity:.28;z-index:2;filter:saturate(.8) brightness(.92);}
+@keyframes iconVanishBurst{0%{transform:translate(-50%,-50%) scale(1);opacity:1;filter:brightness(1)}36%{transform:translate(-50%,-50%) scale(1.2) rotate(-5deg);opacity:1;filter:brightness(1.28)}100%{transform:translate(-50%,-82%) scale(.62) rotate(10deg);opacity:0;filter:brightness(1.15) blur(1px)}}
+@media(max-width:380px){.symbol-name-card.current,.symbol-stage.advance .next{font-size:2.18rem}.symbol-name-card.next,.symbol-stage.advance .next2{font-size:1.2rem}.symbol-name-card.next2,.symbol-stage.advance .next3{font-size:.95rem}.icon-next{left:20%;}.icon-next2{left:6%;}}
+
+/* ===== Countdown ===== */
+.countdown-overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.28);z-index:4200;pointer-events:none;}
+.countdown-overlay.show{display:flex;}
+.countdown-number{font-family:'Dela Gothic One','Zen Maru Gothic',sans-serif;font-size:5.2rem;color:#fff;text-shadow:0 6px 0 var(--accent-dark),0 0 28px rgba(0,224,224,.78);animation:countPop .72s cubic-bezier(.34,1.56,.64,1) both;}
+.countdown-number.go{font-size:3.8rem;color:#ffeb3b;text-shadow:0 5px 0 #ef6c00,0 0 28px rgba(255,235,59,.78);}
+@keyframes countPop{0%{opacity:0;transform:scale(.45) rotate(-8deg)}25%{opacity:1;transform:scale(1.22) rotate(3deg)}72%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.82)}}
+body.counting .periodic-grid{pointer-events:none;}
+
+</style>
+</head>
+<body>
+<section id="titleScreen" class="screen active">
+  <h1 class="title-pop logo">エレメント20</h1>
+  <div class="subtitle">20番までの元素をすばやくチェック！</div>
+  <div class="title-card">
+    <div style="font-weight:900;color:#236b75;line-height:1.5;">モードを選んでスタート</div>
+    <div class="mode-grid">
+      <div class="mode-card">
+        <button class="btn green" onclick="startGame('symbol')">元素記号</button>
+        <div class="mode-best">BEST：<span id="best-symbol">0</span></div>
+      </div>
+      <div class="mode-card">
+        <button class="btn" onclick="startGame('name')">元素名</button>
+        <div class="mode-best">BEST：<span id="best-name">0</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="gameScreen" class="screen">
+  <div class="topbar">
+    <div class="timer-wrap">
+      <div id="timerRing" class="timer-ring"></div>
+      <div id="timerText" class="timer-text">30</div>
+      <div id="timePop" class="time-pop">+5s</div>
+    </div>
+    <div class="scorebox">
+      <div>正解数</div>
+      <div id="score" class="score">0</div>
+      <div id="comboNote" class="combo-note"></div>
+    </div>
+    <button class="btn pink back-mini" onclick="endGame(true)">終了</button>
+  </div>
+
+  <div class="mode-label" id="modeLabel">元素名から元素記号を答えよう</div>
+  <div id="questionPanel" class="question-panel">
+    <div id="questionViewport" class="question-viewport"></div>
+  </div>
+
+  <div class="table-wrap">
+    <div id="periodicGrid" class="periodic-grid"></div>
+  </div>
+</section>
+
+<div id="gameOver">
+  <div class="over-card">
+    <div class="over-title">TIME UP!</div>
+    <div>正解数</div>
+    <div id="finalScore" class="over-score">0</div>
+    <button class="btn green" onclick="backTitle()">タイトルへ</button>
+  </div>
+</div>
+<div id="resultOverlay" class="result-overlay"></div>
+<div id="countdownOverlay" class="countdown-overlay"><div id="countdownNumber" class="countdown-number">3</div></div>
+
+<script>
+const ELEMENTS=[
+ {n:1,s:'H',j:'水素',t:'H',r:1,c:1},{n:2,s:'He',j:'ヘリウム',t:'He',r:1,c:18},
+ {n:3,s:'Li',j:'リチウム',t:'Metal',r:2,c:1},{n:4,s:'Be',j:'ベリリウム',t:'Metal',r:2,c:2},{n:5,s:'B',j:'ホウ素',t:'B',r:2,c:13},{n:6,s:'C',j:'炭素',t:'C',r:2,c:14},{n:7,s:'N',j:'窒素',t:'N',r:2,c:15},{n:8,s:'O',j:'酸素',t:'O',r:2,c:16},{n:9,s:'F',j:'フッ素',t:'F',r:2,c:17},{n:10,s:'Ne',j:'ネオン',t:'Ne',r:2,c:18},
+ {n:11,s:'Na',j:'ナトリウム',t:'Metal',r:3,c:1},{n:12,s:'Mg',j:'マグネシウム',t:'Metal',r:3,c:2},{n:13,s:'Al',j:'アルミニウム',t:'Metal',r:3,c:13},{n:14,s:'Si',j:'ケイ素',t:'Si',r:3,c:14},{n:15,s:'P',j:'リン',t:'P',r:3,c:15},{n:16,s:'S',j:'硫黄',t:'S',r:3,c:16},{n:17,s:'Cl',j:'塩素',t:'Cl',r:3,c:17},{n:18,s:'Ar',j:'アルゴン',t:'Ar',r:3,c:18},
+ {n:19,s:'K',j:'カリウム',t:'Metal',r:4,c:1},{n:20,s:'Ca',j:'カルシウム',t:'Metal',r:4,c:2}
+];
+const BEST_KEY={symbol:'element20_best_symbol',name:'element20_best_name'};
+let mode='symbol', qQueue=[], score=0, timeLeft=30, maxTime=30, timer=null, accepting=false;
+function atomHTML(e,big=false){return `<div class="atom ${big?'big':''} t-${e.t}" data-symbol="${e.s}"><span class="num">${e.n}</span>${e.s}</div>`;}
+function pick(exceptSymbols=[]){let pool=ELEMENTS.filter(e=>!exceptSymbols.includes(e.s));return pool[Math.floor(Math.random()*pool.length)];}
+function current(){return qQueue[0];}
+function updateBestView(){document.getElementById('best-symbol').textContent=localStorage.getItem(BEST_KEY.symbol)||0;document.getElementById('best-name').textContent=localStorage.getItem(BEST_KEY.name)||0;}
+updateBestView();
+function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function fillQueue(){while(qQueue.length<6){qQueue.push(pick(qQueue.map(e=>e.s)));}}
+function startGame(m){
+  mode=m;
+  score=0;
+  timeLeft=30;
+  maxTime=30;
+  qQueue=[];
+  fillQueue();
+  accepting=false;
+  document.body.classList.add('counting');
+  document.getElementById('score').textContent='0';
+  document.getElementById('comboNote').textContent='';
+  document.getElementById('modeLabel').textContent=mode==='symbol'?'元素名から元素記号を答えよう':'元素記号から元素名を答えよう';
+  renderQuestion(false);
+  renderTable();
+  updateTimer();
+  go('gameScreen');
+  clearInterval(timer);
+  timer=null;
+  startCountdown(()=>{
+    document.body.classList.remove('counting');
+    accepting=true;
+    clearInterval(timer);
+    timer=setInterval(()=>{
+      timeLeft=Math.max(0,timeLeft-0.1);
+      updateTimer();
+      if(timeLeft<=0)endGame(false);
+    },100);
+  });
+}
+function startCountdown(done){
+  const overlay=document.getElementById('countdownOverlay');
+  const num=document.getElementById('countdownNumber');
+  const steps=['3','2','1','GO!'];
+  let i=0;
+  overlay.classList.add('show');
+  function tick(){
+    const text=steps[i];
+    num.textContent=text;
+    num.className='countdown-number'+(text==='GO!'?' go':'');
+    num.style.animation='none';
+    void num.offsetWidth;
+    num.style.animation='countPop .72s cubic-bezier(.34,1.56,.64,1) both';
+    i++;
+    if(i<steps.length){
+      setTimeout(tick,720);
+    }else{
+      setTimeout(()=>{
+        overlay.classList.remove('show');
+        if(done)done();
+      },620);
+    }
+  }
+  tick();
+}
+function updateTimer(){document.getElementById('timerText').textContent=Math.ceil(timeLeft);const p=Math.max(0,Math.min(100,(timeLeft/maxTime)*100));let color='#00acc1';let inner='linear-gradient(180deg,#d9fbff 0%,#83eaf4 100%)';if(p<25){color='#ff5252';inner='linear-gradient(180deg,#ffd9d9 0%,#ff8a80 100%)';}else if(p<50){color='#ff9800';inner='linear-gradient(180deg,#ffe0b2 0%,#ffb74d 100%)';}const ring=document.getElementById('timerRing');ring.style.setProperty('--p',p+'%');ring.style.setProperty('--timer-color',color);ring.style.setProperty('--timer-inner',inner);}
+function renderQuestion(){
+  const v=document.getElementById('questionViewport');
+  if(mode==='symbol'){
+    v.innerHTML=`<div class="symbol-stage" id="symbolStage">
+      <div class="symbol-name-card current">${qQueue[0].j}</div>
+      <div class="symbol-name-card next">${qQueue[1].j}</div>
+      <div class="symbol-name-card next2">${qQueue[2].j}</div>
+      <div class="symbol-name-card next3">${qQueue[3].j}</div>
+    </div>`;
+  }else{
+    v.innerHTML=`<div id="iconStage" class="icon-stage">
+      <div class="icon-card icon-current">${atomHTML(qQueue[0],true)}</div>
+      <div class="icon-card icon-next">${atomHTML(qQueue[1],true)}</div>
+      <div class="icon-card icon-next2">${atomHTML(qQueue[2],true)}</div>
+      <div class="icon-card icon-next3">${atomHTML(qQueue[3],true)}</div>
+    </div>`;
+  }
+}
+
+function advanceQuestion(){
+  qQueue.shift();
+  fillQueue();
+  renderQuestion();
+}
+function animateToNext(done){
+  if(mode==='symbol'){
+    const stage=document.getElementById('symbolStage');
+    if(!stage){ advanceQuestion(); if(done)done(); return; }
+    stage.classList.add('advance');
+    setTimeout(()=>{
+      advanceQuestion();
+      if(done)done();
+    },320);
+  }else{
+    const stage=document.getElementById('iconStage');
+    if(!stage){ advanceQuestion(); if(done)done(); return; }
+    stage.classList.add('advance');
+    setTimeout(()=>{
+      advanceQuestion();
+      if(done)done();
+    },340);
+  }
+}
+function displayCol(e){return e.c<=2?e.c:e.c-10;}
+function renderTable(){const grid=document.getElementById('periodicGrid');grid.innerHTML='';for(let r=1;r<=4;r++){for(let dc=1;dc<=8;dc++){const e=ELEMENTS.find(x=>x.r===r&&displayCol(x)===dc);const cell=document.createElement('button');cell.className='cell';cell.style.gridColumn=dc;cell.style.gridRow=r;if(e){cell.dataset.symbol=e.s;cell.onclick=ev=>answer(e,cell,ev);if(mode==='symbol') cell.innerHTML=atomHTML(e,false);else {const twoLine=e.s==='Mg'||e.s==='Al';const long=(!twoLine&&e.j.length>=6)?' long':'';if(twoLine){const parts=e.s==='Mg'?['マグネ','シウム']:['アルミ','ニウム'];cell.innerHTML=`<div class="answer-name two-line"><span>${parts[0]}</span><span>${parts[1]}</span></div>`;}else{cell.innerHTML=`<div class="answer-name${long}">${e.j}</div>`;}}} else {cell.style.pointerEvents='none';}grid.appendChild(cell);}}}
+function answer(e,cell,ev){if(!accepting)return;const ok=e.s===current().s;if(mode==='symbol')flyAtom(cell,ok);else flashNameChoice(cell,ok);if(ok)correctAnswer();else wrongAnswer(cell);}
+function flyAtom(cell,ok){const atom=cell.querySelector('.atom');if(!atom)return;const r=atom.getBoundingClientRect();const q=document.getElementById('questionPanel').getBoundingClientRect();const clone=atom.cloneNode(true);clone.classList.add('fly');clone.style.left=r.left+'px';clone.style.top=r.top+'px';clone.style.width=r.width+'px';clone.style.height=r.height+'px';document.body.appendChild(clone);const tx=(q.left+q.width/2)-(r.left+r.width/2);const ty=(q.top+q.height/2)-(r.top+r.height/2);requestAnimationFrame(()=>{clone.style.transform=`translate(${tx}px,${ty}px) scale(${ok?1.35:.75})`;clone.style.opacity=ok?'0':'1';});setTimeout(()=>clone.remove(),380);if(!ok){atom.classList.add('rejected');setTimeout(()=>atom.classList.remove('rejected'),360);}}
+function flashNameChoice(cell,ok){const box=cell.querySelector('.answer-name');if(!box)return;if(ok){box.classList.add('correct-flash');setTimeout(()=>box.classList.remove('correct-flash'),420);}else{box.animate([{transform:'translateX(0)'},{transform:'translateX(-9px)'},{transform:'translateX(9px)'},{transform:'translateX(0)'}],{duration:280,easing:'ease'});}}
+function correctAnswer(){
+  if(!accepting)return;
+  accepting=false;
+  document.body.classList.add('answer-locked');
+  score++;
+  document.getElementById('score').textContent=score;
+  successEffect();
+  const panel=document.getElementById('questionPanel');
+  panel.classList.add('correct');
+    if(score%5===0){
+    timeLeft+=3;
+    maxTime=Math.max(maxTime,timeLeft);
+    showTimePop('+3s','bonus');
+    document.getElementById('comboNote').textContent='5問正解！ +3s';
+    setTimeout(()=>document.getElementById('comboNote').textContent='',1100);
+  }
+  setTimeout(()=>{
+    panel.classList.remove('correct');
+    animateToNext(()=>{
+      renderTable();
+      accepting=true;
+      document.body.classList.remove('answer-locked');
+    });
+  },70);
+}
+function wrongAnswer(){document.body.classList.add('shake');setTimeout(()=>document.body.classList.remove('shake'),300);}
+function showTimePop(text,type){const b=document.getElementById('timePop');b.textContent=text;b.className='time-pop '+type;b.classList.remove('show');void b.offsetWidth;b.classList.add('show');}
+function successEffect(){const overlay=document.getElementById('resultOverlay');overlay.classList.remove('success');void overlay.offsetWidth;overlay.classList.add('success');const q=document.getElementById('questionPanel').getBoundingClientRect();for(let i=0;i<18;i++){const p=document.createElement('div');p.className='particle';p.style.left=(q.left+q.width/2)+'px';p.style.top=(q.top+q.height/2)+'px';const a=(Math.PI*2*i/18)+(Math.random()*.35);const d=55+Math.random()*80;p.style.setProperty('--x',Math.cos(a)*d+'px');p.style.setProperty('--y',Math.sin(a)*d+'px');p.style.background=i%3===0?'#00e0e0':(i%3===1?'#ffeb3b':'#ff9800');document.body.appendChild(p);setTimeout(()=>p.remove(),620);}}
+function endGame(manual){clearInterval(timer);timer=null;accepting=false;document.body.classList.remove('answer-locked');document.body.classList.remove('counting');document.getElementById('countdownOverlay').classList.remove('show');const best=Number(localStorage.getItem(BEST_KEY[mode])||0);if(score>best)localStorage.setItem(BEST_KEY[mode],score);document.getElementById('finalScore').textContent=score;document.getElementById('gameOver').style.display='flex';updateBestView();}
+function backTitle(){document.getElementById('gameOver').style.display='none';clearInterval(timer);timer=null;document.body.classList.remove('answer-locked');document.body.classList.remove('counting');document.getElementById('countdownOverlay').classList.remove('show');go('titleScreen');updateBestView();}
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./element20-sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
